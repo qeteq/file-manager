@@ -7,6 +7,10 @@ import { ls } from './commands/ls.js';
 import { sleep } from './commands/sleep.js';
 import { cat } from './commands/cat.js';
 import { add } from './commands/add.js';
+import { rn } from './commands/rn.js';
+import { cp } from './commands/cp.js';
+import { mv } from './commands/mv.js';
+import { rm } from './commands/rm.js';
 
 const commands = {
     up,
@@ -15,6 +19,10 @@ const commands = {
     sleep,
     cat,
     add,
+    rn,
+    cp,
+    mv,
+    rm,
 };
 
 class FileManager {
