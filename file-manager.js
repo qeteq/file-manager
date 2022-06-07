@@ -1,11 +1,14 @@
 import { userInfo, homedir } from 'os';
 import { Repl } from './repl.js';
+
 import { up } from './commands/up.js';
 import { cd } from './commands/cd.js';
+import { ls } from './commands/ls.js';
 
 const commands = {
     up,
     cd,
+    ls,
 };
 
 class FileManager {
@@ -16,6 +19,7 @@ class FileManager {
             prompt: () => `\nYou are currently in ${process.cwd()}\n🍤 > `,
             context: {
                 getUsername: () => this._username,
+                writeLine: (str) => this._repl.writeLine(str),
             },
         });
 

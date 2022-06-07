@@ -52,8 +52,7 @@ export class Repl extends EventEmitter {
     constructor(
         input = process.stdin,
         output = process.stdout,
-        { prompt = '🍤 > ' } = {},
-        context = {}
+        { prompt = '🍤 > ', context = {} } = {}
     ) {
         super();
         this._input = input;
