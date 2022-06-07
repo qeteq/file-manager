@@ -11,3 +11,4 @@ class BaseError extends Error {
 
 export class InvalidInputError extends BaseError {}
 export class CommandFailureError extends BaseError {}
+export class CommandAbortError extends BaseError {}

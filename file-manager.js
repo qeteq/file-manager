@@ -4,22 +4,28 @@ import { Repl } from './repl.js';
 import { up } from './commands/up.js';
 import { cd } from './commands/cd.js';
 import { ls } from './commands/ls.js';
+import { sleep } from './commands/sleep.js';
 
 const commands = {
     up,
     cd,
     ls,
+    sleep,
 };
 
 class FileManager {
     constructor({ username }) {
         this._username = username;
 
-        this._repl = new Repl(process.stdin, process.stdout, {
+        const input = process.stdin;
+        const output = process.stdout;
+
+        this._repl = new Repl(input, output, {
             prompt: () => `\nYou are currently in ${process.cwd()}\n🍤 > `,
             context: {
                 getUsername: () => this._username,
                 writeLine: (str) => this._repl.writeLine(str),
+                output,
             },
         });
 

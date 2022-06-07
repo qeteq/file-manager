@@ -112,29 +112,44 @@ export class Repl extends EventEmitter {
     }
 
     start() {
+        /** @type {AbortController | null} */
+        let commandAbortController = null;
+
+        this._rli.on('SIGINT', () => {
+            if (commandAbortController) {
+                commandAbortController.abort();
+            } else {
+                this._rli.close();
+            }
+        });
+
         // Repl event loop
         (async () => {
             // eslint-disable-next-line no-constant-condition
             while (true) {
                 try {
-                    const ac = new AbortController();
-                    const { signal } = ac;
                     const { name, args } = await this.prompt();
                     const command = this._findCommand(name);
+
+                    commandAbortController = new AbortController();
+                    const { signal } = commandAbortController;
                     await command.exec(args, {
                         ...this._context,
                         signal,
                     });
                 } catch (e) {
                     if (e.name === 'InvalidInputError') {
-                        this.writeLine('Invalid input');
+                        this.writeLine(`Invalid input (${e.message})`);
                     } else if (e.name === 'CommandFailureError') {
-                        this.writeLine(`Operation failed (${e.cause.message})`);
+                        this.writeLine(`Operation failed (${e.message})`);
+                    } else if (e.name === 'CommandAbortError') {
+                        this.writeLine('Operation cancelled');
                     } else {
                         console.error(e);
                         this.writeLine('Operation failed');
-                        // throw e;
                     }
+                } finally {
+                    commandAbortController = null;
                 }
             }
         })();
