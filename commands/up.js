@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { InvalidInputError } from '../errors.js';
+import { CommandFailureError, InvalidInputError } from '../errors.js';
 
 const up = {
     async exec(args) {
@@ -8,7 +8,11 @@ const up = {
         }
         const currentDir = process.cwd();
         const nextDir = join(currentDir, '..');
-        process.chdir(nextDir);
+        try {
+            process.chdir(nextDir);
+        } catch (error) {
+            throw new CommandFailureError(error.message, { cause: error });
+        }
     },
 };
 

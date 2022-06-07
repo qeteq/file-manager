@@ -47,16 +47,19 @@ export class Repl extends EventEmitter {
      * @param {NodeJS.WritableStream} [output]
      * @param {object} [options]
      * @param { prompt: string | () => string} [options.prompt]
+     * @param {object} [options.context]
      */
     constructor(
         input = process.stdin,
         output = process.stdout,
-        { prompt = '🍤 > ' } = {}
+        { prompt = '🍤 > ' } = {},
+        context = {}
     ) {
         super();
         this._input = input;
         this._output = output;
         this._prompt = prompt;
+        this._context = context;
 
         this._closed = false;
         this._commands = new Map();
@@ -72,7 +75,6 @@ export class Repl extends EventEmitter {
      * @param {{ exec: (args: string[], context: any) => any }} command
      */
     registerCommand(name, command) {
-        console.log(name, command);
         if (!name) {
             throw new Error('Command name is required');
         }
@@ -121,14 +123,18 @@ export class Repl extends EventEmitter {
                     const { name, args } = await this.prompt();
                     const command = this._findCommand(name);
                     await command.exec(args, {
-                        ...this._getCommandContext(),
+                        ...this._context,
                         signal,
                     });
                 } catch (e) {
                     if (e.name === 'InvalidInputError') {
                         this.writeLine('Invalid input');
+                    } else if (e.name === 'CommandFailureError') {
+                        this.writeLine(`Operation failed (${e.cause.message})`);
                     } else {
-                        throw e;
+                        console.error(e);
+                        this.writeLine('Operation failed');
+                        // throw e;
                     }
                 }
             }
@@ -148,13 +154,5 @@ export class Repl extends EventEmitter {
             throw new InvalidInputError(`Unknown command: ${command}`);
         }
         return command;
-    }
-
-    /** @private */
-    _getCommandContext() {
-        if (!this._cachedCommandContext) {
-            this._cachedCommandContext = {};
-        }
-        return this._cachedCommandContext;
     }
 }

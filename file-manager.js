@@ -1,15 +1,22 @@
-import { userInfo } from 'os';
+import { userInfo, homedir } from 'os';
 import { Repl } from './repl.js';
 import { up } from './commands/up.js';
+import { cd } from './commands/cd.js';
 
 const commands = {
     up,
+    cd,
 };
 
 class FileManager {
-    constructor() {
+    constructor({ username }) {
+        this._username = username;
+
         this._repl = new Repl(process.stdin, process.stdout, {
             prompt: () => `\nYou are currently in ${process.cwd()}\n🍤 > `,
+            context: {
+                getUsername: () => this._username,
+            },
         });
 
         Object.entries(commands).forEach(([name, command]) => {
@@ -17,14 +24,17 @@ class FileManager {
         });
     }
 
-    start({ username = userInfo().username } = {}) {
-        this._repl.writeLine(`Hello, ${username}!`);
-        this._repl.start();
+    start() {
+        process.chdir(homedir());
+
+        this._repl.writeLine(`Hello, ${this._username}!`);
         this._repl.on('exit', () => {
             this._repl.writeLine('\n\nGoodbye!');
         });
+
+        this._repl.start();
     }
 }
 
-const fm = new FileManager();
+const fm = new FileManager({ username: userInfo().username });
 fm.start();
