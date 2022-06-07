@@ -13,6 +13,8 @@ import { mv } from './commands/mv.js';
 import { rm } from './commands/rm.js';
 import { os } from './commands/os.js';
 import { hash } from './commands/hash.js';
+import { compress } from './commands/compress.js';
+import { decompress } from './commands/decompress.js';
 
 const commands = {
     up,
@@ -27,6 +29,8 @@ const commands = {
     rm,
     os,
     hash,
+    compress,
+    decompress,
 };
 
 class FileManager {
