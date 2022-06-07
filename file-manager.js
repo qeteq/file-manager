@@ -6,6 +6,7 @@ import { cd } from './commands/cd.js';
 import { ls } from './commands/ls.js';
 import { sleep } from './commands/sleep.js';
 import { cat } from './commands/cat.js';
+import { add } from './commands/add.js';
 
 const commands = {
     up,
@@ -13,6 +14,7 @@ const commands = {
     ls,
     sleep,
     cat,
+    add,
 };
 
 class FileManager {
@@ -36,8 +38,8 @@ class FileManager {
         });
     }
 
-    start() {
-        process.chdir(homedir());
+    start({ cwd = homedir() } = {}) {
+        process.chdir(cwd);
 
         this._repl.writeLine(`Hello, ${this._username}!`);
         this._repl.on('exit', () => {
@@ -49,4 +51,4 @@ class FileManager {
 }
 
 const fm = new FileManager({ username: userInfo().username });
-fm.start();
+fm.start({ cwd: '.' });

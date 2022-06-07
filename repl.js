@@ -165,7 +165,7 @@ export class Repl extends EventEmitter {
     _findCommand(name) {
         const command = this._commands.get(name);
         if (!command) {
-            throw new InvalidInputError(`Unknown command: ${command}`);
+            throw new InvalidInputError(`Unknown command: ${name}`);
         }
         return command;
     }
