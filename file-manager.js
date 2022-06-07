@@ -5,12 +5,14 @@ import { up } from './commands/up.js';
 import { cd } from './commands/cd.js';
 import { ls } from './commands/ls.js';
 import { sleep } from './commands/sleep.js';
+import { cat } from './commands/cat.js';
 
 const commands = {
     up,
     cd,
     ls,
     sleep,
+    cat,
 };
 
 class FileManager {

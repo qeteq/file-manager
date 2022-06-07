@@ -2,7 +2,7 @@ import { createInterface } from 'readline';
 import { EventEmitter } from 'events';
 import { promisify } from 'util';
 
-import { InvalidInputError } from './errors.js';
+import { CommandFailureError, InvalidInputError, isAbortError } from './errors.js';
 
 const getValue = (x) => (typeof x === 'function' ? x() : x);
 
@@ -138,11 +138,11 @@ export class Repl extends EventEmitter {
                         signal,
                     });
                 } catch (e) {
-                    if (e.name === 'InvalidInputError') {
+                    if (e instanceof InvalidInputError) {
                         this.writeLine(`Invalid input (${e.message})`);
-                    } else if (e.name === 'CommandFailureError') {
+                    } else if (e instanceof CommandFailureError) {
                         this.writeLine(`Operation failed (${e.message})`);
-                    } else if (e.name === 'CommandAbortError') {
+                    } else if (isAbortError(e)) {
                         this.writeLine('Operation cancelled');
                     } else {
                         console.error(e);
