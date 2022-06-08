@@ -12,7 +12,7 @@ const ls = {
         try {
             entries = await readdir(dir, { withFileTypes: true });
         } catch (error) {
-            throw new CommandFailureError(error.message, { cause: error });
+            throw CommandFailureError.causedBy(error);
         }
 
         const output = entries

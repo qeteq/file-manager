@@ -16,7 +16,7 @@ const cp = {
         try {
             await copyFile(from, to, constants.COPYFILE_EXCL);
         } catch (error) {
-            throw new CommandFailureError(error.message, { cause: error });
+            throw CommandFailureError.causedBy(error);
         }
     },
 };

@@ -16,7 +16,7 @@ const hash = {
             await pipeline(input, hasher, { signal });
         } catch (error) {
             rethrowIfAbort(error);
-            throw new CommandFailureError(error.message, { cause: error });
+            throw CommandFailureError.causedBy(error);
         }
 
         writeLine(hasher.digest('hex'));

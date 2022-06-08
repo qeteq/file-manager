@@ -34,7 +34,7 @@ const cat = {
                     if (error.code === 'ENOENT') {
                         throw new CommandFailureError(`cat: ${path}: no such file`);
                     }
-                    throw new CommandFailureError(error.message, { cause: error });
+                    throw CommandFailureError.causedBy(error);
                 }
             })
         );
@@ -54,7 +54,7 @@ const cat = {
                 await finished(input);
             } catch (error) {
                 rethrowIfAbort(error);
-                throw new CommandFailureError(error.message, { cause: error });
+                throw CommandFailureError.causedBy(error);
             }
         }
     },

@@ -11,7 +11,7 @@ const rmCommand = {
         try {
             await rm(file);
         } catch (error) {
-            throw new CommandFailureError(error.message, { cause: error });
+            throw CommandFailureError.causedBy(error);
         }
     },
 };

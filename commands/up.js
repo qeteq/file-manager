@@ -11,7 +11,7 @@ const up = {
         try {
             process.chdir(nextDir);
         } catch (error) {
-            throw new CommandFailureError(error.message, { cause: error });
+            throw CommandFailureError.causedBy(error);
         }
     },
 };

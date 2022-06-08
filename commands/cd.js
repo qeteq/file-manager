@@ -12,10 +12,7 @@ const cd = {
         try {
             process.chdir(nextDir);
         } catch (error) {
-            throw new CommandFailureError(
-                'cd: cannot change current working directory',
-                { cause: error }
-            );
+            throw CommandFailureError.causedBy(error);
         }
     },
 };

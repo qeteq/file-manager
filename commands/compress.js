@@ -16,7 +16,7 @@ const compress = {
             await pipeline(input, compressor, output, { signal });
         } catch (error) {
             rethrowIfAbort(error);
-            throw new CommandFailureError(error.message, { cause: error });
+            throw CommandFailureError.causedBy(error);
         }
     },
 };

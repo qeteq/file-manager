@@ -16,7 +16,7 @@ const mv = {
         try {
             await rename(from, to);
         } catch (error) {
-            throw new CommandFailureError(error.message, { cause: error });
+            throw CommandFailureError.causedBy(error);
         }
     },
 };
