@@ -1,37 +1,7 @@
 import { userInfo, homedir } from 'os';
 import { Repl } from './repl.js';
 
-import { up } from './commands/up.js';
-import { cd } from './commands/cd.js';
-import { ls } from './commands/ls.js';
-import { sleep } from './commands/sleep.js';
-import { cat } from './commands/cat.js';
-import { add } from './commands/add.js';
-import { rn } from './commands/rn.js';
-import { cp } from './commands/cp.js';
-import { mv } from './commands/mv.js';
-import { rm } from './commands/rm.js';
-import { os } from './commands/os.js';
-import { hash } from './commands/hash.js';
-import { compress } from './commands/compress.js';
-import { decompress } from './commands/decompress.js';
-
-const commands = {
-    up,
-    cd,
-    ls,
-    sleep,
-    cat,
-    add,
-    rn,
-    cp,
-    mv,
-    rm,
-    os,
-    hash,
-    compress,
-    decompress,
-};
+import * as commands from './commands/index.js';
 
 class FileManager {
     constructor({ username }) {
@@ -43,7 +13,6 @@ class FileManager {
         this._repl = new Repl(input, output, {
             prompt: () => `\nYou are currently in ${process.cwd()}\n🍤 > `,
             context: {
-                getUsername: () => this._username,
                 writeLine: (str) => this._repl.writeLine(str),
                 output,
             },
