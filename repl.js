@@ -122,7 +122,7 @@ export class Repl extends EventEmitter {
         this._output.write('\n');
     }
 
-    start() {
+    startLoop() {
         /** @type {AbortController | null} */
         let commandAbortController = null;
 
@@ -155,7 +155,7 @@ export class Repl extends EventEmitter {
                         signal: commandAbortController.signal,
                     });
                 } catch (e) {
-                    const handled = this._handleError(e);
+                    const handled = this._handleLoopError(e);
                     if (!handled) {
                         throw e;
                     }
@@ -167,7 +167,7 @@ export class Repl extends EventEmitter {
     }
 
     /** @private */
-    _handleError(error) {
+    _handleLoopError(error) {
         if (error instanceof InvalidInputError) {
             this.writeLine(`Invalid input (${error.message})`);
         } else if (error instanceof CommandFailureError) {

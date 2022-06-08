@@ -31,7 +31,7 @@ class FileManager {
             this._repl.writeLine('\n\nGoodbye!');
         });
 
-        this._repl.start();
+        this._repl.startLoop();
     }
 }
 
