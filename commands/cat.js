@@ -1,7 +1,8 @@
 import { createReadStream } from 'fs';
 import { realpath, stat } from 'fs/promises';
-import { pipeline } from 'stream/promises';
+import { finished } from 'stream/promises';
 import {
+    CommandAbortError,
     CommandFailureError,
     InvalidInputError,
     rethrowIf,
@@ -40,10 +41,17 @@ const cat = {
 
         while (paths.length) {
             const path = paths.shift();
+            /** @type {NodeJS.ReadStream} */
             let input;
             try {
                 input = createReadStream(path);
-                await pipeline(input, output, { signal, end: false });
+                // using default pipe because streams/promises pipeline closes
+                // output stream on completion
+                input.pipe(output, { end: false });
+                signal.addEventListener('abort', () => {
+                    input.destroy(new CommandAbortError());
+                });
+                await finished(input);
             } catch (error) {
                 rethrowIfAbort(error);
                 throw new CommandFailureError(error.message, { cause: error });
