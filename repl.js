@@ -69,7 +69,6 @@ export class Repl extends EventEmitter {
     }
 
     /**
-     *
      * @param {string} name
      * @param {{ exec: (args: string[], context: any) => any }} command
      */
@@ -92,15 +91,27 @@ export class Repl extends EventEmitter {
     /**
      * @param {object} [options]
      * @param {AbortSignal} [options.signal]
-     * @returns
+     * @returns {{ name: string, args: string[] } | null}
      */
     async prompt() {
         if (this._closed) {
             throw new Error('prompt after close');
         }
         const promptString = getValue(this._prompt);
-        const input = await this._question(promptString);
-        return parseCommand(input);
+
+        this._questionAbortController = new AbortController();
+        const { signal } = this._questionAbortController;
+        try {
+            const input = await this._question(promptString, { signal });
+            return parseCommand(input);
+        } catch (error) {
+            if (isAbortError(error)) {
+                return null;
+            }
+            throw error;
+        } finally {
+            this._questionAbortController = null;
+        }
     }
 
     /**
@@ -118,6 +129,10 @@ export class Repl extends EventEmitter {
         this._rli.on('SIGINT', () => {
             if (commandAbortController) {
                 commandAbortController.abort();
+                return;
+            }
+            if (this._rli.cursor > 0) {
+                this._questionAbortController?.abort();
             } else {
                 this._rli.close();
             }
@@ -128,31 +143,42 @@ export class Repl extends EventEmitter {
             // eslint-disable-next-line no-constant-condition
             while (true) {
                 try {
-                    const { name, args } = await this.prompt();
+                    const parsedInput = await this.prompt();
+                    if (!parsedInput) {
+                        continue;
+                    }
+                    const { name, args } = parsedInput;
                     const command = this._findCommand(name);
-
                     commandAbortController = new AbortController();
-                    const { signal } = commandAbortController;
                     await command.exec(args, {
                         ...this._context,
-                        signal,
+                        signal: commandAbortController.signal,
                     });
                 } catch (e) {
-                    if (e instanceof InvalidInputError) {
-                        this.writeLine(`Invalid input (${e.message})`);
-                    } else if (e instanceof CommandFailureError) {
-                        this.writeLine(`Operation failed (${e.message})`);
-                    } else if (isAbortError(e)) {
-                        this.writeLine('Operation cancelled');
-                    } else {
-                        console.error(e);
-                        this.writeLine('Operation failed');
+                    const handled = this._handleError(e);
+                    if (!handled) {
+                        throw e;
                     }
                 } finally {
                     commandAbortController = null;
                 }
             }
         })();
+    }
+
+    /** @private */
+    _handleError(error) {
+        if (error instanceof InvalidInputError) {
+            this.writeLine(`Invalid input (${error.message})`);
+        } else if (error instanceof CommandFailureError) {
+            this.writeLine(`Operation failed (${error.message})`);
+        } else if (isAbortError(error)) {
+            this.writeLine('Operation cancelled');
+        } else {
+            console.error(error);
+            this.writeLine('Operation failed');
+        }
+        return true;
     }
 
     /** @private */
