@@ -23,15 +23,12 @@ class FileManager {
         });
     }
 
-    start({ cwd = homedir() } = {}) {
+    async start({ cwd = homedir() } = {}) {
         process.chdir(cwd);
 
         this._repl.writeLine(`Hello, ${this._username}!`);
-        this._repl.on('exit', () => {
-            this._repl.writeLine('\n\nGoodbye!');
-        });
-
-        this._repl.startLoop();
+        await this._repl.startLoop();
+        this._repl.writeLine('\n\nGoodbye!');
     }
 }
 

@@ -1,5 +1,4 @@
 import { createInterface } from 'readline';
-import { EventEmitter } from 'events';
 import { promisify } from 'util';
 
 import { CommandFailureError, InvalidInputError, isAbortError } from './errors.js';
@@ -41,20 +40,19 @@ function parseCommand(input) {
     return { name, args };
 }
 
-export class Repl extends EventEmitter {
+export class Repl {
     /**
      * @param {NodeJS.ReadableStream} [input]
      * @param {NodeJS.WritableStream} [output]
      * @param {object} [options]
      * @param { prompt: string | () => string} [options.prompt]
-     * @param {object} [options.context]
+     * @param {object} [options.context] - commands context
      */
     constructor(
         input = process.stdin,
         output = process.stdout,
         { prompt = '🍤 > ', context = {} } = {}
     ) {
-        super();
         this._input = input;
         this._output = output;
         this._prompt = prompt;
@@ -122,48 +120,51 @@ export class Repl extends EventEmitter {
         this._output.write('\n');
     }
 
-    startLoop() {
+    async startLoop() {
+        if (this._closed) {
+            throw new Error('start after close');
+        }
+
         /** @type {AbortController | null} */
         let commandAbortController = null;
+        let running = true;
 
         this._rli.on('SIGINT', () => {
             if (commandAbortController) {
                 commandAbortController.abort();
                 return;
             }
-            if (this._rli.cursor > 0) {
-                this._questionAbortController?.abort();
-            } else {
-                this._rli.close();
+            if (this._rli.cursor === 0) {
+                running = false;
             }
+            this._questionAbortController?.abort();
         });
 
-        // Repl event loop
-        (async () => {
-            // eslint-disable-next-line no-constant-condition
-            while (true) {
-                try {
-                    const parsedInput = await this.prompt();
-                    if (!parsedInput) {
-                        continue;
-                    }
-                    const { name, args } = parsedInput;
-                    const command = this._findCommand(name);
-                    commandAbortController = new AbortController();
-                    await command.exec(args, {
-                        ...this._context,
-                        signal: commandAbortController.signal,
-                    });
-                } catch (e) {
-                    const handled = this._handleLoopError(e);
-                    if (!handled) {
-                        throw e;
-                    }
-                } finally {
-                    commandAbortController = null;
+        while (running) {
+            try {
+                const parsedInput = await this.prompt();
+                if (!parsedInput) {
+                    // question was aborted
+                    continue;
                 }
+                const { name, args } = parsedInput;
+                const command = this._findCommand(name);
+                commandAbortController = new AbortController();
+                await command.exec(args, {
+                    ...this._context,
+                    signal: commandAbortController.signal,
+                });
+            } catch (e) {
+                const handled = this._handleLoopError(e);
+                if (!handled) {
+                    throw e;
+                }
+            } finally {
+                commandAbortController = null;
             }
-        })();
+        }
+
+        this._rli.close();
     }
 
     /** @private */
@@ -184,7 +185,6 @@ export class Repl extends EventEmitter {
     /** @private */
     _handleClose() {
         this._closed = true;
-        this.emit('exit');
     }
 
     /** @private */
