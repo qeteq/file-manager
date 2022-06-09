@@ -1,10 +1,9 @@
 import { CommandAbortError, InvalidInputError } from '../errors.js';
+import { validateArgs } from '../validators/arguments.js';
 
 const sleep = {
     async exec(args, { signal }) {
-        if (args.length === 0) {
-            throw new InvalidInputError('sleep: missing argument');
-        }
+        validateArgs({ length: { min: 1 } }, args);
 
         const ms = args.map(Number).map((a, b) => a + b) * 1000;
         if (Number.isNaN(ms)) {

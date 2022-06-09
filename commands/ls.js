@@ -1,11 +1,11 @@
 import { readdir } from 'fs/promises';
-import { CommandFailureError, InvalidInputError } from '../errors.js';
+import { CommandFailureError } from '../errors.js';
+import { validateArgs } from '../validators/arguments.js';
 
 const ls = {
     async exec(args, context) {
-        if (args.length > 1) {
-            throw new InvalidInputError('ls: too many arguments');
-        }
+        validateArgs({ length: { max: 1 } }, args);
+
         const [dir = '.'] = args;
         let entries;
 

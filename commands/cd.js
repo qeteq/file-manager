@@ -1,12 +1,12 @@
 import { homedir } from 'os';
 import { resolve } from 'path';
-import { CommandFailureError, InvalidInputError } from '../errors.js';
+import { CommandFailureError } from '../errors.js';
+import { validateArgs } from '../validators/arguments.js';
 
 const cd = {
     async exec(args) {
-        if (args.length > 1) {
-            throw new InvalidInputError('cd: too many arguments');
-        }
+        validateArgs({ length: { min: 0, max: 1 } }, args);
+
         const [dir = homedir()] = args;
         const nextDir = resolve(process.cwd(), dir);
         try {

@@ -1,21 +1,14 @@
 import { createReadStream } from 'fs';
 import { finished } from 'stream/promises';
-import {
-    CommandAbortError,
-    CommandFailureError,
-    InvalidInputError,
-    rethrowIfAbort,
-} from '../errors.js';
+import { CommandAbortError, CommandFailureError, rethrowIfAbort } from '../errors.js';
+import { validateArgs } from '../validators/arguments.js';
 import { validateStatType } from '../validators/path.js';
 
 const cat = {
     async exec(args, { signal, output }) {
-        if (args.length === 0) {
-            throw new InvalidInputError('cat: argument is required');
-        }
+        validateArgs({ length: { min: 1 } }, args);
 
         const paths = args.slice(0);
-
         while (paths.length) {
             const path = paths.shift();
             await validateStatType(path, ['file', 'blockDevice', 'characterDevice']);

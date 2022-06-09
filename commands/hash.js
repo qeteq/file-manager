@@ -1,16 +1,15 @@
 import { createHash } from 'crypto';
 import { createReadStream } from 'fs';
 import { pipeline } from 'stream/promises';
-import { CommandFailureError, InvalidInputError, rethrowIfAbort } from '../errors.js';
+import { CommandFailureError, rethrowIfAbort } from '../errors.js';
+import { validateArgs } from '../validators/arguments.js';
 
 const hash = {
     async exec(args, { signal, writeLine }) {
-        if (args.length !== 1) {
-            throw new InvalidInputError('hash: exactly 1 argument is required');
-        }
-        const [filePath] = args;
+        validateArgs({ length: 1 }, args);
 
         const hasher = createHash('sha256');
+        const [filePath] = args;
         try {
             const input = createReadStream(filePath);
             await pipeline(input, hasher, { signal });

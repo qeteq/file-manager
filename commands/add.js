@@ -1,11 +1,10 @@
 import { writeFile } from 'fs/promises';
-import { CommandFailureError, InvalidInputError } from '../errors.js';
+import { CommandFailureError } from '../errors.js';
+import { validateArgs } from '../validators/arguments.js';
 
 const add = {
     async exec(args, { signal }) {
-        if (args.length < 1) {
-            throw new InvalidInputError('add: missing argument');
-        }
+        validateArgs({ length: 1 }, args);
 
         const [name] = args;
         try {

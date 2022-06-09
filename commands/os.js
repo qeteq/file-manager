@@ -1,7 +1,8 @@
 import * as os from 'os';
 import { InvalidInputError } from '../errors.js';
+import { validateArgs } from '../validators/arguments.js';
 
-const eol = os.EOL.replace('\n', '\\n').replace('\r', '\\r');
+const eol = JSON.stringify(os.EOL).slice(1, -1);
 
 const subcommands = {
     EOL: () => eol,
@@ -10,7 +11,7 @@ const subcommands = {
             // prettier-ignore
             return [
                 `  - model: ${model}`,
-                `    speed: ${(speed/1000).toFixed(3)} GHz`
+                `    speed: ${(speed/1000).toFixed(3)} GHz`,
             ].join('\n');
         });
 
@@ -30,9 +31,8 @@ const allowedOptions = Object.keys(subcommands).map((k) => '--' + k);
 
 const osCommand = {
     async exec(args, context) {
-        if (args.length !== 1) {
-            throw new InvalidInputError('os: exactly 1 argument is required');
-        }
+        validateArgs({ length: 1 }, args);
+
         const [option] = args;
         if (!allowedOptions.includes(option)) {
             throw new InvalidInputError(`os: unknown option ${option}`);

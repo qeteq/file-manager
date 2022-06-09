@@ -1,16 +1,17 @@
 import { constants } from 'fs';
 import { copyFile } from 'fs/promises';
 import { basename, join, resolve } from 'path';
-import { CommandFailureError, InvalidInputError } from '../errors.js';
+import { CommandFailureError } from '../errors.js';
+import { validateArgs } from '../validators/arguments.js';
+import { validateStatType } from '../validators/path.js';
 
 const cp = {
     async exec(args) {
-        if (args.length !== 2) {
-            throw new InvalidInputError('cp: exactly 2 arguments are required');
-        }
+        validateArgs({ length: 2 }, args);
 
-        // TODO: validate from is file
         const [from, toFolder] = args;
+        await validateStatType(from, 'file');
+
         const to = join(toFolder, basename(resolve(from)));
 
         try {
