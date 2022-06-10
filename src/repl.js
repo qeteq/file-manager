@@ -148,6 +148,9 @@ export class Repl {
                     continue;
                 }
                 const { name, args } = parsedInput;
+                if (name === '.exit') {
+                    break;
+                }
                 const command = this._findCommand(name);
                 commandAbortController = new AbortController();
                 await command.exec(args, {
