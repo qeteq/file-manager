@@ -58,12 +58,10 @@ export class Repl {
         this._prompt = prompt;
         this._context = context;
 
-        this._closed = false;
         this._commands = new Map();
 
         this._rli = createInterface(input, output);
         this._question = promisify(this._rli.question).bind(this._rli);
-        this._rli.on('close', () => this._handleClose());
     }
 
     /**
@@ -92,9 +90,6 @@ export class Repl {
      * @returns {{ name: string, args: string[] } | null}
      */
     async prompt() {
-        if (this._closed) {
-            throw new Error('prompt after close');
-        }
         const promptString = getValue(this._prompt);
 
         this._questionAbortController = new AbortController();
@@ -121,10 +116,6 @@ export class Repl {
     }
 
     async startLoop() {
-        if (this._closed) {
-            throw new Error('start after close');
-        }
-
         /** @type {AbortController | null} */
         let commandAbortController = null;
         let running = true;
@@ -183,11 +174,6 @@ export class Repl {
             this.writeLine('Operation failed');
         }
         return true;
-    }
-
-    /** @private */
-    _handleClose() {
-        this._closed = true;
     }
 
     /** @private */

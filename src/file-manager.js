@@ -28,7 +28,7 @@ class FileManager {
 
         this._repl.writeLine(`Hello, ${this._username}!`);
         await this._repl.startLoop();
-        this._repl.writeLine('\n\nGoodbye!');
+        this._repl.writeLine(`\nThank you for using File Manager, ${this._username}!`);
     }
 }
 
