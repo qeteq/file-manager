@@ -1,4 +1,4 @@
-import { userInfo, homedir } from 'os';
+import { homedir } from 'os';
 import { Repl } from './repl.js';
 
 import * as commands from './commands/index.js';
@@ -32,5 +32,4 @@ class FileManager {
     }
 }
 
-const fm = new FileManager({ username: userInfo().username });
-fm.start({ cwd: '.' });
+export { FileManager };
