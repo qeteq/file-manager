@@ -5,36 +5,28 @@ import { CommandFailureError, InvalidInputError, isAbortError } from './errors.j
 
 const getValue = (x) => (typeof x === 'function' ? x() : x);
 
-const inputWordRe = /^(?:([^'"\s]+)|'([^']*)'|"([^"]*)")/;
+const inputWordRe = /(?:([^'"\s]+)|'([^']*)'|"([^"]*)")\s*/g;
 
 /**
  * @param {string} input
  * @returns {{ name: string, args: string[] }}
  */
 function parseCommand(input) {
-    let name = '';
-    const args = [];
-
     input = input.trim();
+    const matches = [...input.matchAll(inputWordRe)];
 
-    while (input.length) {
-        const match = input.match(inputWordRe);
-        if (!match) {
-            throw new InvalidInputError('Invalid input');
-        }
-        const [substring, ...rest] = match;
-        const word = rest.find((x) => x !== undefined);
+    const matchesLength = matches.map((m) => m[0].length).reduce((a, b) => a + b);
+    if (matchesLength !== input.length) {
+        throw new InvalidInputError('Invalid input');
+    }
 
-        if (!name) {
-            if (!word) {
-                throw new InvalidInputError('Command is required');
-            }
-            name = word;
-        } else {
-            args.push(word);
-        }
+    const [name, ...args] = matches.map((match) => {
+        // find one of 3 matching groups containing argument
+        return [...match].slice(1).find((x) => x !== undefined);
+    });
 
-        input = input.slice(substring.length).trim();
+    if (!name) {
+        throw new InvalidInputError('Command is required');
     }
 
     return { name, args };
